@@ -1,0 +1,99 @@
+import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/db";
+import { QRCode } from "@/models/QRCode";
+import { validateUrl } from "@/utils/validation";
+import mongoose from "mongoose";
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    await connectDB();
+    const { id } = await params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
+    }
+
+    const qrCode = await QRCode.findById(id).lean();
+    if (!qrCode) {
+      return NextResponse.json({ error: "QR code not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(qrCode);
+  } catch (error) {
+    console.error("Error fetching QR code:", error);
+    return NextResponse.json({ error: "Failed to fetch QR code" }, { status: 500 });
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    await connectDB();
+    const { id } = await params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
+    }
+
+    const body = await request.json();
+    const { destination, isActive } = body;
+
+    const updateFields: Record<string, unknown> = { updatedAt: new Date() };
+
+    if (destination !== undefined) {
+      const urlValidation = validateUrl(destination);
+      if (!urlValidation.valid) {
+        return NextResponse.json({ error: urlValidation.error }, { status: 400 });
+      }
+      updateFields.destination = destination;
+    }
+
+    if (isActive !== undefined) {
+      updateFields.isActive = isActive;
+    }
+
+    const qrCode = await QRCode.findByIdAndUpdate(
+      id,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    ).lean();
+
+    if (!qrCode) {
+      return NextResponse.json({ error: "QR code not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(qrCode);
+  } catch (error) {
+    console.error("Error updating QR code:", error);
+    return NextResponse.json({ error: "Failed to update QR code" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    await connectDB();
+    const { id } = await params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
+    }
+
+    const qrCode = await QRCode.findByIdAndDelete(id);
+    if (!qrCode) {
+      return NextResponse.json({ error: "QR code not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: "QR code deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting QR code:", error);
+    return NextResponse.json({ error: "Failed to delete QR code" }, { status: 500 });
+  }
+}
