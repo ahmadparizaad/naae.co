@@ -96,14 +96,14 @@ export default function AnalyticsPage({
       </div>
 
       {!slug && (
-        <div className="flex flex-col items-center justify-center min-h-[300px] text-muted-foreground">
+        <div className="flex flex-col items-center justify-center min-h-75 text-muted-foreground">
           <ChartIcon className="w-16 h-16 mb-4 opacity-30" />
           <p>Select a QR code to view its analytics</p>
         </div>
       )}
 
       {loading && slug && (
-        <div className="flex items-center justify-center min-h-[300px]">
+        <div className="flex items-center justify-center min-h-75">
           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
         </div>
       )}

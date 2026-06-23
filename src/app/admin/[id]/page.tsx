@@ -72,7 +72,7 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
@@ -196,7 +196,7 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
                 className="text-sm text-primary hover:underline break-all flex items-center gap-1"
               >
                 {qr.destination}
-                <ExternalLinkIcon className="w-3 h-3 flex-shrink-0" />
+                <ExternalLinkIcon className="w-3 h-3 shrink-0" />
               </a>
             )}
           </div>

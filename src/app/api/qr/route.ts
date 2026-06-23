@@ -4,6 +4,8 @@ import { QRCode } from "@/models/QRCode";
 import { generateQRCode, generateQRWithLogo } from "@/utils/qr-generator";
 import { validateSlug, validateUrl, validateName, validateLogoFile } from "@/utils/validation";
 
+export const maxDuration = 30;
+
 export async function GET() {
   try {
     await connectDB();
@@ -54,6 +56,8 @@ export async function POST(request: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const qrUrl = `${appUrl}/r/${slug}`;
+
+    console.log("logoFile present:", !!logoFile, "size:", logoFile?.size, "name:", logoFile?.name);
 
     let logoBuffer: Buffer | undefined;
     if (logoFile) {

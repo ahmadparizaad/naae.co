@@ -106,8 +106,8 @@ export default function QRListPage() {
                         rel="noopener noreferrer"
                         className="text-sm text-primary hover:underline flex items-center gap-1"
                       >
-                        <span className="max-w-[200px] truncate">{qr.destination}</span>
-                        <ExternalLinkIcon className="w-3 h-3 flex-shrink-0" />
+                        <span className="max-w-50 truncate">{qr.destination}</span>
+                        <ExternalLinkIcon className="w-3 h-3 shrink-0" />
                       </a>
                     </td>
                     <td className="px-6 py-4">
