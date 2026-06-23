@@ -28,6 +28,21 @@ export default function QRListPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  async function downloadFile(url: string, filename: string) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      alert("Failed to download file");
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this QR code?")) return;
     try {
@@ -129,22 +144,20 @@ export default function QRListPage() {
                         >
                           <EyeIcon className="w-4 h-4" />
                         </Link>
-                        <a
-                          href={qr.qrPngUrl}
-                          download={`${qr.slug}.png`}
+                        <button
+                          onClick={() => downloadFile(qr.qrPngUrl, `${qr.slug}.png`)}
                           className="p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                           title="Download PNG"
                         >
                           <DownloadIcon className="w-4 h-4" />
-                        </a>
-                        <a
-                          href={qr.qrSvgUrl}
-                          download={`${qr.slug}.svg`}
+                        </button>
+                        <button
+                          onClick={() => downloadFile(qr.qrSvgUrl, `${qr.slug}.svg`)}
                           className="p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                           title="Download SVG"
                         >
                           <SvgIcon className="w-4 h-4" />
-                        </a>
+                        </button>
                         <button
                           onClick={() => handleDelete(qr._id)}
                           className="p-2 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"

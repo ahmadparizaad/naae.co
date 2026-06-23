@@ -42,10 +42,15 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid ID format" }, { status: 400 });
     }
 
+    const qrCode = await QRCode.findById(id).lean();
+    if (!qrCode) {
+      return NextResponse.json({ error: "QR code not found" }, { status: 404 });
+    }
+
     const body = await request.json();
     const { destination, isActive, qrColor } = body;
 
-    const updateFields: Record<string, unknown> = { updatedAt: new Date() };
+    const updateFields: Record<string, unknown> = {};
 
     if (destination !== undefined) {
       const urlValidation = validateUrl(destination);
@@ -59,23 +64,13 @@ export async function PATCH(
       updateFields.isActive = isActive;
     }
 
-    let needsRegeneration = false;
-
     if (qrColor !== undefined) {
       const colorValidation = validateHexColor(qrColor);
       if (!colorValidation.valid) {
         return NextResponse.json({ error: colorValidation.error }, { status: 400 });
       }
       updateFields.qrColor = qrColor;
-      needsRegeneration = true;
-    }
 
-    let qrCode = await QRCode.findById(id).lean();
-    if (!qrCode) {
-      return NextResponse.json({ error: "QR code not found" }, { status: 404 });
-    }
-
-    if (needsRegeneration) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
       const qrUrl = `${appUrl}/r/${qrCode.slug}`;
       const { pngUrl, svgUrl } = await generateQRCode(qrUrl, qrCode.slug, qrColor);
@@ -83,13 +78,13 @@ export async function PATCH(
       updateFields.qrSvgUrl = svgUrl;
     }
 
-    qrCode = await QRCode.findByIdAndUpdate(
+    const updated = await QRCode.findByIdAndUpdate(
       id,
       { $set: updateFields },
       { new: true, runValidators: true }
     ).lean();
 
-    return NextResponse.json(qrCode);
+    return NextResponse.json(updated);
   } catch (error) {
     console.error("Error updating QR code:", error);
     return NextResponse.json({ error: "Failed to update QR code" }, { status: 500 });

@@ -46,6 +46,21 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
       .finally(() => setLoading(false));
   }, [id, router]);
 
+  async function downloadFile(url: string, filename: string) {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      alert("Failed to download file");
+    }
+  }
+
   async function handleSave() {
     setError(null);
     try {
@@ -95,22 +110,20 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
           <h1 className="text-3xl font-bold tracking-tight">{qr.name}</h1>
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href={qr.qrPngUrl}
-            download={`${qr.slug}.png`}
+          <button
+            onClick={() => downloadFile(qr.qrPngUrl, `${qr.slug}.png`)}
             className="inline-flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-accent transition-colors"
           >
             <DownloadIcon className="w-4 h-4" />
             PNG
-          </a>
-          <a
-            href={qr.qrSvgUrl}
-            download={`${qr.slug}.svg`}
+          </button>
+          <button
+            onClick={() => downloadFile(qr.qrSvgUrl, `${qr.slug}.svg`)}
             className="inline-flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-accent transition-colors"
           >
             <SvgIcon className="w-4 h-4" />
             SVG
-          </a>
+          </button>
         </div>
       </div>
 
@@ -238,22 +251,20 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
                 className="w-48 h-48 rounded-lg border border-border"
               />
               <div className="flex gap-2">
-                <a
-                  href={qr.qrPngUrl}
-                  download={`${qr.slug}.png`}
+                <button
+                  onClick={() => downloadFile(qr.qrPngUrl, `${qr.slug}.png`)}
                   className="inline-flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-accent transition-colors"
                 >
                   <DownloadIcon className="w-4 h-4" />
                   Download PNG
-                </a>
-                <a
-                  href={qr.qrSvgUrl}
-                  download={`${qr.slug}.svg`}
+                </button>
+                <button
+                  onClick={() => downloadFile(qr.qrSvgUrl, `${qr.slug}.svg`)}
                   className="inline-flex items-center gap-2 px-3 py-2 bg-secondary text-secondary-foreground rounded-lg text-sm font-medium hover:bg-accent transition-colors"
                 >
                   <SvgIcon className="w-4 h-4" />
                   Download SVG
-                </a>
+                </button>
               </div>
             </div>
           </div>

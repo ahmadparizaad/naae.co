@@ -43,6 +43,12 @@ export default function AnalyticsPage({
   const [slug, setSlug] = useState(selectedSlug || "");
 
   useEffect(() => {
+    if (selectedSlug) {
+      setSlug(selectedSlug);
+    }
+  }, [selectedSlug]);
+
+  useEffect(() => {
     fetch("/api/qr")
       .then((res) => res.json())
       .then((data) => setQrCodes(data))

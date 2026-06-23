@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       logoBuffer = Buffer.from(arrayBuffer);
     }
 
-    const { pngUrl, svgUrl } = logoBuffer
+    const { pngUrl, svgUrl, logoUrl } = logoBuffer
       ? await generateQRWithLogo(qrUrl, slug, logoBuffer, qrColor)
       : await generateQRCode(qrUrl, slug, qrColor);
 
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       destination,
       qrPngUrl: pngUrl,
       qrSvgUrl: svgUrl,
-      logoUrl: logoFile ? "uploaded" : undefined,
+      logoUrl,
       qrColor,
     });
 

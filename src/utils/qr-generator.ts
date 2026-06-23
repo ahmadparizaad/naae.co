@@ -16,6 +16,7 @@ const ERROR_CORRECTION_LEVEL: "H" = "H";
 export interface QRGenerationResult {
   pngUrl: string;
   svgUrl: string;
+  logoUrl?: string;
 }
 
 async function uploadToCloudinary(buffer: Buffer, folder: string, publicId: string): Promise<string> {
@@ -140,13 +141,20 @@ export async function generateQRWithLogo(
   const timestamp = Date.now();
   const pngPublicId = `qr/${slug}/${slug}-${timestamp}`;
   const svgPublicId = `qr/${slug}/${slug}-${timestamp}`;
+  const logoPublicId = logoBuffer ? `logos/${slug}/${slug}-${timestamp}` : undefined;
 
-  const [pngUrl, svgUrl] = await Promise.all([
+  const uploads: Promise<string>[] = [
     uploadToCloudinary(pngBuffer, "naae-qr", pngPublicId),
     uploadSvgToCloudinary(svgString, "naae-qr", svgPublicId),
-  ]);
+  ];
 
-  return { pngUrl, svgUrl };
+  if (logoBuffer && logoPublicId) {
+    uploads.push(uploadToCloudinary(logoBuffer, "naae-qr", logoPublicId));
+  }
+
+  const [pngUrl, svgUrl, logoUrl] = await Promise.all(uploads);
+
+  return { pngUrl, svgUrl, logoUrl };
 }
 
 export async function generateQRCode(
