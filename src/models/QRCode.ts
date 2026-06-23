@@ -9,6 +9,7 @@ export interface IQRCode extends Document {
   qrPngUrl: string;
   qrSvgUrl: string;
   logoUrl?: string;
+  qrColor: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +56,11 @@ const QRCodeSchema = new Schema<IQRCode>(
     logoUrl: {
       type: String,
       trim: true,
+    },
+    qrColor: {
+      type: String,
+      default: "#000000",
+      match: /^#[0-9A-Fa-f]{6}$/,
     },
   },
   {

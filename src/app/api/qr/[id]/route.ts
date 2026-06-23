@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { QRCode } from "@/models/QRCode";
-import { validateUrl } from "@/utils/validation";
+import { ScanEvent } from "@/models/ScanEvent";
+import { generateQRCode } from "@/utils/qr-generator";
+import { validateUrl, validateHexColor } from "@/utils/validation";
 import mongoose from "mongoose";
 
 export async function GET(
@@ -41,7 +43,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { destination, isActive } = body;
+    const { destination, isActive, qrColor } = body;
 
     const updateFields: Record<string, unknown> = { updatedAt: new Date() };
 
@@ -57,15 +59,35 @@ export async function PATCH(
       updateFields.isActive = isActive;
     }
 
-    const qrCode = await QRCode.findByIdAndUpdate(
+    let needsRegeneration = false;
+
+    if (qrColor !== undefined) {
+      const colorValidation = validateHexColor(qrColor);
+      if (!colorValidation.valid) {
+        return NextResponse.json({ error: colorValidation.error }, { status: 400 });
+      }
+      updateFields.qrColor = qrColor;
+      needsRegeneration = true;
+    }
+
+    let qrCode = await QRCode.findById(id).lean();
+    if (!qrCode) {
+      return NextResponse.json({ error: "QR code not found" }, { status: 404 });
+    }
+
+    if (needsRegeneration) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      const qrUrl = `${appUrl}/r/${qrCode.slug}`;
+      const { pngUrl, svgUrl } = await generateQRCode(qrUrl, qrCode.slug, qrColor);
+      updateFields.qrPngUrl = pngUrl;
+      updateFields.qrSvgUrl = svgUrl;
+    }
+
+    qrCode = await QRCode.findByIdAndUpdate(
       id,
       { $set: updateFields },
       { new: true, runValidators: true }
     ).lean();
-
-    if (!qrCode) {
-      return NextResponse.json({ error: "QR code not found" }, { status: 404 });
-    }
 
     return NextResponse.json(qrCode);
   } catch (error) {
@@ -90,6 +112,8 @@ export async function DELETE(
     if (!qrCode) {
       return NextResponse.json({ error: "QR code not found" }, { status: 404 });
     }
+
+    await ScanEvent.deleteMany({ slug: qrCode.slug });
 
     return NextResponse.json({ message: "QR code deleted successfully" });
   } catch (error) {

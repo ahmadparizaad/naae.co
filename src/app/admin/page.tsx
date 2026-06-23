@@ -12,6 +12,7 @@ interface QRCodeData {
   scanCount: number;
   qrPngUrl: string;
   qrSvgUrl: string;
+  qrColor?: string;
   createdAt: string;
 }
 
@@ -89,7 +90,10 @@ export default function QRListPage() {
                 qrCodes.map((qr) => (
                   <tr key={qr._id} className="hover:bg-muted/50 transition-colors">
                     <td className="px-6 py-4">
-                      <p className="font-medium text-foreground">{qr.name}</p>
+                      <p className="font-medium text-foreground flex items-center gap-2">
+                        <span className="inline-block w-3 h-3 rounded-full border border-border shrink-0" style={{ backgroundColor: qr.qrColor || "#000000" }} />
+                        {qr.name}
+                      </p>
                       {!qr.isActive && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-destructive/10 text-destructive mt-1">
                           Inactive

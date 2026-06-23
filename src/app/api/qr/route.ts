@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { QRCode } from "@/models/QRCode";
 import { generateQRCode, generateQRWithLogo } from "@/utils/qr-generator";
-import { validateSlug, validateUrl, validateName, validateLogoFile } from "@/utils/validation";
+import { validateSlug, validateUrl, validateName, validateLogoFile, validateHexColor } from "@/utils/validation";
 
 export const maxDuration = 30;
 
@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     const name = formData.get("name") as string;
     const slug = formData.get("slug") as string;
     const destination = formData.get("destination") as string;
+    const qrColor = (formData.get("qrColor") as string) || "#000000";
     const logoFile = formData.get("logo") as File | null;
 
     const nameValidation = validateName(name);
@@ -42,6 +43,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: urlValidation.error }, { status: 400 });
     }
 
+    const colorValidation = validateHexColor(qrColor);
+    if (!colorValidation.valid) {
+      return NextResponse.json({ error: colorValidation.error }, { status: 400 });
+    }
+
     if (logoFile) {
       const logoValidation = validateLogoFile(logoFile);
       if (!logoValidation.valid) {
@@ -57,8 +63,6 @@ export async function POST(request: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const qrUrl = `${appUrl}/r/${slug}`;
 
-    console.log("logoFile present:", !!logoFile, "size:", logoFile?.size, "name:", logoFile?.name);
-
     let logoBuffer: Buffer | undefined;
     if (logoFile) {
       const arrayBuffer = await logoFile.arrayBuffer();
@@ -66,8 +70,8 @@ export async function POST(request: NextRequest) {
     }
 
     const { pngUrl, svgUrl } = logoBuffer
-      ? await generateQRWithLogo(qrUrl, slug, logoBuffer)
-      : await generateQRCode(qrUrl, slug);
+      ? await generateQRWithLogo(qrUrl, slug, logoBuffer, qrColor)
+      : await generateQRCode(qrUrl, slug, qrColor);
 
     const qrCode = await QRCode.create({
       name,
@@ -76,6 +80,7 @@ export async function POST(request: NextRequest) {
       qrPngUrl: pngUrl,
       qrSvgUrl: svgUrl,
       logoUrl: logoFile ? "uploaded" : undefined,
+      qrColor,
     });
 
     return NextResponse.json({

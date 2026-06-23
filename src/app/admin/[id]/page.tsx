@@ -13,6 +13,7 @@ interface QRCodeData {
   scanCount: number;
   qrPngUrl: string;
   qrSvgUrl: string;
+  qrColor?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,6 +26,7 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
   const [editing, setEditing] = useState(false);
   const [destination, setDestination] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [qrColor, setQrColor] = useState("#000000");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +40,7 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
         setQr(data);
         setDestination(data.destination);
         setIsActive(data.isActive);
+        setQrColor(data.qrColor || "#000000");
       })
       .catch(() => router.push("/admin"))
       .finally(() => setLoading(false));
@@ -57,7 +60,7 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
       const res = await fetch(`/api/qr/${qr!._id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ destination, isActive }),
+        body: JSON.stringify({ destination, isActive, qrColor }),
       });
       if (!res.ok) throw new Error("Failed to update");
       const updated = await res.json();
@@ -131,9 +134,16 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
                 <p className="mt-1 font-mono text-sm">{qr.slug}</p>
               </div>
               <div>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">QR Color</label>
+                <p className="mt-1 flex items-center gap-2">
+                  <span className="inline-block w-5 h-5 rounded border border-border" style={{ backgroundColor: qr.qrColor || "#000000" }} />
+                  <span className="font-mono text-sm">{qr.qrColor || "#000000"}</span>
+                </p>
+              </div>
+              <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</label>
                 <p className="mt-1">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${qr.isActive ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-destructive/10 text-destructive"}`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${qr.isActive ? "bg-green-200 text-green-800 dark:bg-green-800/50 dark:text-green-300" : "bg-destructive/10 text-destructive"}`}>
                     {qr.isActive ? "Active" : "Inactive"}
                   </span>
                 </p>
@@ -177,6 +187,22 @@ export default function QRDetailPage({ params }: { params: Promise<{ id: string 
                     />
                     Active
                   </label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-medium">Color:</label>
+                  <input
+                    type="color"
+                    value={qrColor}
+                    onChange={(e) => setQrColor(e.target.value)}
+                    className="w-8 h-8 p-0.5 rounded border border-input cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={qrColor}
+                    onChange={(e) => setQrColor(e.target.value)}
+                    className="px-2 py-1 border border-input rounded bg-background focus:outline-none focus:ring-2 focus:ring-ring font-mono text-sm w-28"
+                    maxLength={7}
+                  />
                 </div>
                 <div className="flex gap-2">
                   <button

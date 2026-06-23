@@ -10,6 +10,7 @@ export default function CreateQRPage() {
   const [destination, setDestination] = useState("");
   const [logo, setLogo] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [qrColor, setQrColor] = useState("#000000");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -69,6 +70,7 @@ export default function CreateQRPage() {
       formData.append("name", name);
       formData.append("slug", slug);
       formData.append("destination", destination);
+      formData.append("qrColor", qrColor);
       if (logo) {
         formData.append("logo", logo);
       }
@@ -143,6 +145,27 @@ export default function CreateQRPage() {
             className="w-full px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors"
             maxLength={500}
           />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="qrColor" className="block text-sm font-medium">QR Code Color</label>
+          <div className="flex items-center gap-3">
+            <input
+              id="qrColor"
+              type="color"
+              value={qrColor}
+              onChange={(e) => setQrColor(e.target.value)}
+              className="w-10 h-10 p-0.5 rounded border border-input cursor-pointer"
+            />
+            <input
+              type="text"
+              value={qrColor}
+              onChange={(e) => setQrColor(e.target.value)}
+              placeholder="#000000"
+              className="px-3 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-colors font-mono text-sm w-32"
+              maxLength={7}
+            />
+          </div>
         </div>
 
         <div className="space-y-2">

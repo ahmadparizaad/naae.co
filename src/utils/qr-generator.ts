@@ -9,7 +9,7 @@ cloudinary.config({
 });
 
 const QR_SIZE = 1000;
-const LOGO_SIZE_RATIO = 0.16;
+const LOGO_SIZE_RATIO = 0.2;
 const QUIET_ZONE = 4;
 const ERROR_CORRECTION_LEVEL: "H" = "H";
 
@@ -69,14 +69,15 @@ async function uploadSvgToCloudinary(svgString: string, folder: string, publicId
 export async function generateQRWithLogo(
   data: string,
   slug: string,
-  logoBuffer?: Buffer
+  logoBuffer?: Buffer,
+  darkColor: string = "#000000"
 ): Promise<QRGenerationResult> {
   const qrOptions = {
     errorCorrectionLevel: ERROR_CORRECTION_LEVEL,
     margin: QUIET_ZONE,
     width: QR_SIZE,
     color: {
-      dark: "#000000",
+      dark: darkColor,
       light: "#FFFFFF",
     },
   };
@@ -148,6 +149,10 @@ export async function generateQRWithLogo(
   return { pngUrl, svgUrl };
 }
 
-export async function generateQRCode(data: string, slug: string): Promise<QRGenerationResult> {
-  return generateQRWithLogo(data, slug);
+export async function generateQRCode(
+  data: string,
+  slug: string,
+  darkColor: string = "#000000"
+): Promise<QRGenerationResult> {
+  return generateQRWithLogo(data, slug, undefined, darkColor);
 }

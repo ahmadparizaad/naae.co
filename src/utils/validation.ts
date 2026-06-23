@@ -49,6 +49,14 @@ export function validateName(name: string): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
+export function validateHexColor(color: string): { valid: boolean; error?: string } {
+  if (!color) return { valid: true };
+  if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
+    return { valid: false, error: "Color must be a valid hex color (e.g. #FF0000)" };
+  }
+  return { valid: true };
+}
+
 export function validateLogoFile(file: File): { valid: boolean; error?: string } {
   const maxSize = 2 * 1024 * 1024;
   const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/svg+xml", "image/webp"];
