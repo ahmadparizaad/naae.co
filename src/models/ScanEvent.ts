@@ -4,6 +4,13 @@ export interface IScanEvent extends Document {
   slug: string;
   timestamp: Date;
   deviceType: "mobile" | "desktop" | "tablet";
+  browser?: string;
+  os?: string;
+  city?: string;
+  country?: string;
+  region?: string;
+  latitude?: number;
+  longitude?: number;
   userAgent: string;
   referrer?: string;
 }
@@ -26,6 +33,13 @@ const ScanEventSchema = new Schema<IScanEvent>(
       enum: ["mobile", "desktop", "tablet"],
       required: true,
     },
+    browser: { type: String, trim: true },
+    os: { type: String, trim: true },
+    city: { type: String, trim: true },
+    country: { type: String, trim: true },
+    region: { type: String, trim: true },
+    latitude: { type: Number },
+    longitude: { type: Number },
     userAgent: {
       type: String,
       required: true,

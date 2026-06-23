@@ -12,6 +12,16 @@ interface AnalyticsData {
     tablet: number;
   };
   dailyScans: Record<string, number>;
+  browserBreakdown: Record<string, number>;
+  osBreakdown: Record<string, number>;
+  locations: Array<{
+    city: string;
+    country: string;
+    region?: string;
+    count: number;
+    latitude?: number;
+    longitude?: number;
+  }>;
 }
 
 interface QRCodeData {
@@ -120,14 +130,14 @@ export default function AnalyticsPage({
               <p className="text-4xl font-bold mt-2 font-mono">{analytics.todayScans}</p>
             </div>
             <div className="rounded-lg border border-border bg-background p-6">
-              <p className="text-sm text-muted-foreground font-medium">Total</p>
+              <p className="text-sm text-muted-foreground font-medium">Scans (Device)</p>
               <p className="text-4xl font-bold mt-2 font-mono">{total}</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="rounded-lg border border-border bg-background p-6">
-              <h2 className="text-lg font-semibold mb-4">Device Breakdown</h2>
+              <h2 className="text-lg font-semibold mb-4">Device</h2>
               <div className="space-y-4">
                 {[
                   { label: "Mobile", value: analytics.deviceBreakdown.mobile, color: "bg-blue-500" },
@@ -150,6 +160,62 @@ export default function AnalyticsPage({
               </div>
             </div>
 
+            <div className="rounded-lg border border-border bg-background p-6">
+              <h2 className="text-lg font-semibold mb-4">Browser</h2>
+              {Object.keys(analytics.browserBreakdown).length > 0 ? (
+                <div className="space-y-2">
+                  {Object.entries(analytics.browserBreakdown)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 8)
+                    .map(([browser, count]) => (
+                      <div key={browser}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium truncate">{browser}</span>
+                          <span className="font-mono text-muted-foreground shrink-0 ml-2">{count}</span>
+                        </div>
+                        <div className="w-full bg-secondary rounded-full h-1.5">
+                          <div
+                            className="bg-orange-500 h-1.5 rounded-full transition-all"
+                            style={{ width: `${(count / total) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No browser data yet</p>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-6">
+              <h2 className="text-lg font-semibold mb-4">OS</h2>
+              {Object.keys(analytics.osBreakdown).length > 0 ? (
+                <div className="space-y-2">
+                  {Object.entries(analytics.osBreakdown)
+                    .sort(([, a], [, b]) => b - a)
+                    .slice(0, 8)
+                    .map(([os, count]) => (
+                      <div key={os}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium truncate">{os}</span>
+                          <span className="font-mono text-muted-foreground shrink-0 ml-2">{count}</span>
+                        </div>
+                        <div className="w-full bg-secondary rounded-full h-1.5">
+                          <div
+                            className="bg-cyan-500 h-1.5 rounded-full transition-all"
+                            style={{ width: `${(count / total) * 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No OS data yet</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="rounded-lg border border-border bg-background p-6">
               <h2 className="text-lg font-semibold mb-4">Daily Scans (30 days)</h2>
               {dailyEntries.length > 0 ? (
@@ -175,6 +241,29 @@ export default function AnalyticsPage({
                   <span>{dailyEntries[0]?.[0]}</span>
                   <span>{dailyEntries[dailyEntries.length - 1]?.[0]}</span>
                 </div>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-6">
+              <h2 className="text-lg font-semibold mb-4">Locations</h2>
+              {analytics.locations.length > 0 ? (
+                <div className="space-y-3 max-h-80 overflow-y-auto">
+                  {analytics.locations.map((loc, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-lg">📍</span>
+                        <div className="truncate">
+                          <p className="text-sm font-medium truncate">
+                            {[loc.city, loc.region, loc.country].filter(Boolean).join(", ")}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="font-mono text-sm text-muted-foreground shrink-0 ml-2">{loc.count}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">No location data yet</p>
               )}
             </div>
           </div>
